@@ -72,3 +72,5 @@ A partition comparison chart is also created to visually prove how Dask divides 
 
 *Outputs*
 <img width="1022" height="668" alt="Image" src="https://github.com/user-attachments/assets/4797cfd9-974b-4f41-baf1-c9295ab6d87b" />
+
+<img width="481" height="346" alt="Image" src="https://github.com/user-attachments/assets/75b5fabf-b129-4949-bdf3-ba5121df4290" />
