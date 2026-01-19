@@ -111,6 +111,8 @@ while(True):
                     print("Peak Hour of Delhi Metro Traffic:",peak_hour,"AM")
                 print("Number of Stops during Peak Hour:", peak_count)
              elif ch4==2:
+                 stop_times["hour"] = stop_times["arrival_time"].str.slice(0, 2).astype(int)
+                 hourly_traffic = stop_times.groupby("hour").size().compute()
                  plt.figure(figsize=(10, 5))
                  plt.bar(hourly_traffic.index, hourly_traffic.values)
                  plt.xlabel("Hour of the Day")
@@ -138,6 +140,7 @@ while(True):
                 print("Route Name:", route_name)
                 print("Number of Trips:", most_crowded_trip_count)
             elif ch5==2:
+                route_trip_counts = trips.groupby("route_id").size().compute()
                 routes_pd=routes.compute().set_index("route_id")
                 top_routes=route_trip_counts.nlargest(10)
                 route_names=routes_pd.loc[top_routes.index, "route_long_name"]
@@ -200,4 +203,4 @@ while(True):
     elif choice==7:
         print("Exiting program...")
         break
-
+   
