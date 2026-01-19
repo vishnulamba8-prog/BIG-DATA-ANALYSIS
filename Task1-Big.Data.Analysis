@@ -1,0 +1,203 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import dask.dataframe as dd
+
+stop_times = dd.read_csv(r"C:\Users\91783\Downloads\CODTECH IT SOLUTIONS - INTERNSHIP\Delhi-Metro PROJECT (TASK 1)\data\stop_times.csv")
+stops = dd.read_csv(r"C:\Users\91783\Downloads\CODTECH IT SOLUTIONS - INTERNSHIP\Delhi-Metro PROJECT (TASK 1)\data\stops.csv")
+trips = dd.read_csv(r"C:\Users\91783\Downloads\CODTECH IT SOLUTIONS - INTERNSHIP\Delhi-Metro PROJECT (TASK 1)\data\trips.csv")
+routes = dd.read_csv(r"C:\Users\91783\Downloads\CODTECH IT SOLUTIONS - INTERNSHIP\Delhi-Metro PROJECT (TASK 1)\data\routes.csv")
+
+# MAIN MENU
+while(True):
+    print("Main Menu")
+    print("1. Setup & Load Delhi Metro Data")
+    print("2. Explore Stop_Times Data")
+    print("3. Insight-1: Busiest Metro Stations")
+    print("4. Insight-2: Peak Hours")
+    print("5. Insight-3: Most Crowded Lines")
+    print("6. Insight-4: Scalability Proof")
+    print("7. Exit")
+    choice=int(input("Enter your choice:"))
+
+    if choice==1:
+        while(True):
+            print("DATA MENU")
+            print("1. Display the table - STOP_TIMES")
+            print("2. Display the table - STOPS")
+            print("3. Display the table - TRIPS")
+            print("4. Display the table - ROUTES")
+            print("5. Exit")
+            ch1=int(input("Enter your choice:"))
+            #Since the datasets are very large, so instead of loading everything,I am extracting only the top 30 values for analysis
+            if ch1==1:
+                print(stop_times.head(30))
+            elif ch1==2:
+                print(stops.head(30))
+            elif ch1==3:
+                print(trips.head(30))
+            elif ch1==4:
+                print(routes.head(30))
+            elif ch1==5:
+                break    
+            
+    elif choice==2:
+        while(True):
+            print("DATA STATISTICS MENU FOR STOP_TIMES TABLE")
+            print("1. Display the shape of the Stop_Times table")
+            print("2. Display the size of the Stop_Times table")
+            print("3. Display the columns of the Stop_Times table")
+            print("4. Display the data types of all columns of the Stop_Times table")
+            print("5. Exit")
+            ch2=int(input("Enter your choice:"))
+            rows=stop_times.shape[0].compute()
+            cols=len(stop_times.columns)
+            if ch2==1:
+                print(rows,cols)
+            elif ch2==2:
+                print(rows*cols)    
+            elif ch2==3:
+                print(stop_times.columns)
+            elif ch2==4:
+                print(stop_times.dtypes)
+            elif ch2==5:
+                break
+            
+    elif choice==3:
+        while(True):
+            print("INSIGHT-1")
+            print("1. Busiest Metro Station")
+            print("2. Top 10 Busiest Metro Stations - Chart")
+            print("3. Exit")
+            ch3=int(input("Enter your choice:"))
+            if ch3==1:
+                stop_counts=stop_times.groupby("stop_id").size().compute()
+                busiest_stop_id=stop_counts.idxmax()
+                busiest_stop_count=stop_counts.max()
+                station_name=stops[stops["stop_id"] == busiest_stop_id]["stop_name"].compute().iloc[0]
+                print("*Busiest Metro Station*")
+                print("Station Name:", station_name)
+                print("Number of Stops:", busiest_stop_count)
+            elif ch3==2:
+               top10_stops = stop_times.groupby("stop_id").size().nlargest(10).compute() # Get top 10 busiest stop_ids
+               top10_df = stops[stops["stop_id"].isin(top10_stops.index)].compute() # Filter stops Dask DataFrame using isin
+               top10_df = top10_df[["stop_id", "stop_name"]] # Keep only stop_name and stop_id
+               top10_df["count"] = top10_df["stop_id"].map(top10_stops) # Add the count column by mapping
+               top10_df = top10_df.sort_values("count", ascending=False) # Optional:sort by count descending
+               plt.figure(figsize=(8, 5))
+               plt.bar(top10_df["stop_name"], top10_df["count"])
+               plt.xticks(rotation=45, ha="right")
+               plt.title("Top 10 Busiest Metro Stations")
+               plt.ylabel("Number of Stops")
+               plt.tight_layout()
+               plt.show() 
+            elif ch3==3:
+                break
+            
+    elif choice==4:
+         while(True):
+             print("INSIGHT-2")
+             print("1. Peak Hours of Delhi Metro")
+             print("2. Peak Hours - Chart")
+             print("3. Exit")
+             ch4=int(input("Enter your choice:"))
+             if ch4==1:
+                stop_times["hour"]=stop_times["arrival_time"].str.slice(0, 2).astype(int) #Extract hour from arrival_time
+                hourly_traffic=stop_times.groupby("hour").size().compute() #Count traffic per hour
+                peak_hour=hourly_traffic.idxmax() #Find peak hour
+                peak_count=hourly_traffic.max()
+                if peak_hour>12:
+                    print("Peak Hour of Delhi Metro Traffic:",peak_hour,"PM")
+                else:
+                    print("Peak Hour of Delhi Metro Traffic:",peak_hour,"AM")
+                print("Number of Stops during Peak Hour:", peak_count)
+             elif ch4==2:
+                 plt.figure(figsize=(10, 5))
+                 plt.bar(hourly_traffic.index, hourly_traffic.values)
+                 plt.xlabel("Hour of the Day")
+                 plt.ylabel("Number of Stops")
+                 plt.title("Delhi Metro Peak Hours")
+                 plt.xticks(range(0, 25))
+                 plt.tight_layout()
+                 plt.show()
+             elif ch4==3:
+                 break
+
+    elif choice==5:
+        while(True):
+            print("INSIGHT-3")
+            print("1. Most Crowded Metro Lines")
+            print("2. Top 10 Most Crowded Delhi Metro Lines - Chart")
+            print("3. Exit")
+            ch5=int(input("Enter your choice:"))
+            if ch5==1:
+                route_trip_counts=trips.groupby("route_id").size().compute() #Count trips per route
+                most_crowded_route_id=route_trip_counts.idxmax() #Find the most crowded route
+                most_crowded_trip_count=route_trip_counts.max()
+                route_name=routes[routes["route_id"]==most_crowded_route_id]["route_long_name"].compute().iloc[0] #Get route (line) name
+                print("Most Crowded Metro Line:")
+                print("Route Name:", route_name)
+                print("Number of Trips:", most_crowded_trip_count)
+            elif ch5==2:
+                routes_pd=routes.compute().set_index("route_id")
+                top_routes=route_trip_counts.nlargest(10)
+                route_names=routes_pd.loc[top_routes.index, "route_long_name"]
+                plt.figure(figsize=(10, 5))
+                plt.bar(route_names, top_routes.values)
+                plt.xticks(rotation=45, ha="right")
+                plt.xlabel("Metro Line")
+                plt.ylabel("Number of Trips")
+                plt.title("Top 10 Most Crowded Delhi Metro Lines")
+                plt.tight_layout()
+                plt.show()       
+            elif ch5==3:
+                break
+
+    elif choice==6:
+        while(True):
+            print("INSIGHT-4")
+            print("1. Scalability Proof")
+            print("2. Partition Comparison of all tables")
+            print("3. Exit")
+            ch6=int(input("Enter your choice:"))
+            if ch6==1:
+                #Check Partitions for All Tables
+                print("Partitions:")
+                print("stop_times:", stop_times.npartitions)
+                print("stops:", stops.npartitions)
+                print("trips:", trips.npartitions)
+                print("routes:", routes.npartitions)
+                #Lazy Execution Proof (No Computation Yet)
+                lazy_stop_times=stop_times.groupby("stop_id").size()
+                lazy_stops=stops.groupby("stop_id").size()
+                lazy_trips=trips.groupby("route_id").size()
+                lazy_routes=routes.groupby("route_id").size()
+                print(lazy_stop_times)
+                print(lazy_trips)
+                #Trigger Computation (Execution Begins)
+                #Since the data is very large, so instead of loading everything,I am extracting only the top 5 values for analysis
+                print("Computed Results:")
+                print(lazy_stop_times.compute().head())
+                print(lazy_trips.compute().head())
+                #Dask vs Pandas (Row Count Comparison – Main Proof)
+                datasets={"stop_times": stop_times,"stops": stops,
+                            "trips": trips,"routes": routes}
+                for name, df in datasets.items():
+                    print(f"{name} rows using Dask:", df.shape[0].compute())
+            elif ch6==2:
+                tables = ["stop_times", "stops", "trips", "routes"]
+                partitions = [stop_times.npartitions,stops.npartitions,
+                              trips.npartitions,routes.npartitions]
+                plt.figure(figsize=(7, 4))
+                plt.bar(tables, partitions)
+                plt.xlabel("Tables")
+                plt.ylabel("Number of Partitions")
+                plt.title("Scalability Proof: Dask Partitions per Table")
+                plt.tight_layout()
+                plt.show()
+            elif ch6==3:
+                break
+
+    elif choice==7:
+        print("Exiting program...")
+        break
+
