@@ -75,4 +75,6 @@ A partition comparison chart is also created to visually prove how Dask divides 
 
 <img width="1238" height="712" alt="Image" src="https://github.com/user-attachments/assets/cb070ec9-9760-4209-b486-14872dd372c2" />
 
+<img width="1250" height="707" alt="Image" src="https://github.com/user-attachments/assets/a875dd01-5d90-4ed4-b8d0-85cf208a120d" />
+
 <img width="481" height="346" alt="Image" src="https://github.com/user-attachments/assets/75b5fabf-b129-4949-bdf3-ba5121df4290" />
